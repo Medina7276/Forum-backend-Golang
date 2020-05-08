@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"git.01.alem.school/qjawko/forum/http_errors"
-	"git.01.alem.school/qjawko/forum/middleware"
 	"git.01.alem.school/qjawko/forum/model"
 	"git.01.alem.school/qjawko/forum/service"
 	uuid "github.com/satori/go.uuid"
@@ -42,12 +41,12 @@ func (uh *UserHandler) Route(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-	case http.MethodPost:
-		funcToCall = middleware.CheckForAdmin(http.HandlerFunc(uh.CreateUser)).ServeHTTP
+	// case http.MethodPost:
+	// 	funcToCall = middleware.CheckForAdmin(http.HandlerFunc(uh.CreateUser)).ServeHTTP
 	case http.MethodPut:
 		funcToCall = uh.Update
-	case http.MethodDelete:
-		funcToCall = middleware.CheckForModerator(http.HandlerFunc(uh.Delete)).ServeHTTP
+	// case http.MethodDelete:
+	// 	funcToCall = middleware.CheckForModerator(http.HandlerFunc(uh.Delete)).ServeHTTP
 	default:
 		http.Error(w, "Route Not found", http.StatusNotFound)
 		return
@@ -57,23 +56,23 @@ func (uh *UserHandler) Route(w http.ResponseWriter, r *http.Request) {
 }
 
 //CreateUser q
-func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var user model.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+// func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+// 	var user model.User
+// 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
 
-	created, err := uh.UserService.CreateUser(&user)
-	if err != nil {
-		httpErr := err.(*http_errors.HttpError)
-		http.Error(w, httpErr.Error(), httpErr.Code)
-		return
-	}
+// 	created, err := uh.UserService.CreateUser(&user)
+// 	if err != nil {
+// 		httpErr := err.(*http_errors.HttpError)
+// 		http.Error(w, httpErr.Error(), httpErr.Code)
+// 		return
+// 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(created)
-}
+// 	w.WriteHeader(http.StatusCreated)
+// 	json.NewEncoder(w).Encode(created)
+// }
 
 //GetAll qwe
 func (uh *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -131,13 +130,13 @@ func (uh *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(updated)
 }
 
-func (uh *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len(uh.Endpoint):]
-	if err := uh.UserService.DeleteUser(uuid.FromStringOrNil(id)); err != nil {
-		httpErr := err.(*http_errors.HttpError)
-		http.Error(w, httpErr.Error(), httpErr.Code)
-	}
-}
+// func (uh *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
+// 	id := r.URL.Path[len(uh.Endpoint):]
+// 	if err := uh.UserService.DeleteUser(uuid.FromStringOrNil(id)); err != nil {
+// 		httpErr := err.(*http_errors.HttpError)
+// 		http.Error(w, httpErr.Error(), httpErr.Code)
+// 	}
+// }
 
 // RegisterHandler handle register
 // func RegisterHandler() http.HandlerFunc {

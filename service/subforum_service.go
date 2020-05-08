@@ -3,24 +3,24 @@ package service
 import (
 	"net/http"
 
+	"git.01.alem.school/qjawko/forum/dao"
 	"git.01.alem.school/qjawko/forum/http_errors"
 	"git.01.alem.school/qjawko/forum/model"
-	"git.01.alem.school/qjawko/forum/repo"
 	uuid "github.com/satori/go.uuid"
 )
 
 type SubforumService struct {
-	subforumRepo        *repo.SubforumStore
+	subforumDao         *dao.SubforumStore
 	subforumRoleService *SubforumRoleService
 }
 
-func NewSubforumService(subforumRepo *repo.SubforumStore) *SubforumService {
-	return &SubforumService{subforumRepo: subforumRepo}
+func NewSubforumService(subforumDao *dao.SubforumStore) *SubforumService {
+	return &SubforumService{subforumDao: subforumDao}
 }
 
 func (this *SubforumService) CreateSubforum(s *model.Subforum) (*model.Subforum, error) {
 	s.ID = uuid.NewV4()
-	if err := this.subforumRepo.CreateSubforum(s); err != nil {
+	if err := this.subforumDao.CreateSubforum(s); err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 
@@ -41,7 +41,7 @@ func (this *SubforumService) CreateSubforum(s *model.Subforum) (*model.Subforum,
 }
 
 func (this *SubforumService) GetSubforumById(id uuid.UUID) (*model.Subforum, error) {
-	subforum, err := this.subforumRepo.GetSubforumById(id)
+	subforum, err := this.subforumDao.GetSubforumById(id)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusNotFound}
 	}
@@ -49,7 +49,7 @@ func (this *SubforumService) GetSubforumById(id uuid.UUID) (*model.Subforum, err
 }
 
 func (this *SubforumService) GetSubforumsByParentId(parentid uuid.UUID) ([]model.Subforum, error) {
-	subforums, err := this.subforumRepo.GetSubforumByParentId(parentid)
+	subforums, err := this.subforumDao.GetSubforumByParentId(parentid)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusNotFound}
 	}
@@ -57,7 +57,7 @@ func (this *SubforumService) GetSubforumsByParentId(parentid uuid.UUID) ([]model
 }
 
 func (this *SubforumService) GetAllSubforums() ([]model.Subforum, error) {
-	subforums, err := this.subforumRepo.GetAllSubforums()
+	subforums, err := this.subforumDao.GetAllSubforums()
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
@@ -65,7 +65,7 @@ func (this *SubforumService) GetAllSubforums() ([]model.Subforum, error) {
 }
 
 func (this *SubforumService) GetSubforumByName(name string) (*model.Subforum, error) {
-	subforum, err := this.subforumRepo.GetSubforumByName(name)
+	subforum, err := this.subforumDao.GetSubforumByName(name)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusBadRequest}
 	}
@@ -73,14 +73,14 @@ func (this *SubforumService) GetSubforumByName(name string) (*model.Subforum, er
 }
 
 func (this *SubforumService) UpdateSubforum(s *model.Subforum) (*model.Subforum, error) {
-	if err := this.subforumRepo.UpdateSubforum(s); err != nil {
+	if err := this.subforumDao.UpdateSubforum(s); err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 	return this.GetSubforumById(s.ID)
 }
 
 func (this *SubforumService) DeleteSubforum(id uuid.UUID) error {
-	if err := this.subforumRepo.DeleteSubforum(id); err != nil {
+	if err := this.subforumDao.DeleteSubforum(id); err != nil {
 		return &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 	return nil

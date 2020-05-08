@@ -3,31 +3,31 @@ package service
 import (
 	"net/http"
 
+	"git.01.alem.school/qjawko/forum/dao"
 	"git.01.alem.school/qjawko/forum/http_errors"
 	"git.01.alem.school/qjawko/forum/model"
-	"git.01.alem.school/qjawko/forum/repo"
 	uuid "github.com/satori/go.uuid"
 )
 
 type CommentService struct {
-	commentRepo *repo.CommentStore
+	commentDao *dao.CommentStore
 }
 
-func NewCommentService(commentRepo *repo.CommentStore) *CommentService {
-	return &CommentService{commentRepo: commentRepo}
+func NewCommentService(commentDao *dao.CommentStore) *CommentService {
+	return &CommentService{commentDao: commentDao}
 }
 
 func (this *CommentService) CreateComment(comment *model.Comment) (*model.Comment, error) {
 	comment.ID = uuid.NewV4()
 
-	if err := this.commentRepo.CreateComment(comment); err != nil {
+	if err := this.commentDao.CreateComment(comment); err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 	return comment, nil
 }
 
 func (this *CommentService) GetCommentByID(Id uuid.UUID) (*model.Comment, error) {
-	comment, err := this.commentRepo.GetCommentByID(Id)
+	comment, err := this.commentDao.GetCommentByID(Id)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusNotFound}
 	}
@@ -35,7 +35,7 @@ func (this *CommentService) GetCommentByID(Id uuid.UUID) (*model.Comment, error)
 }
 
 func (this *CommentService) GetAllCommentsByPostID(postId uuid.UUID) ([]model.Comment, error) {
-	comments, err := this.commentRepo.GetAllCommentsByUserID(postId)
+	comments, err := this.commentDao.GetAllCommentsByUserID(postId)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
@@ -43,7 +43,7 @@ func (this *CommentService) GetAllCommentsByPostID(postId uuid.UUID) ([]model.Co
 }
 
 func (this *CommentService) GetAllCommentsByUserID(userId uuid.UUID) ([]model.Comment, error) {
-	comments, err := this.commentRepo.GetAllCommentsByUserID(userId)
+	comments, err := this.commentDao.GetAllCommentsByUserID(userId)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
@@ -53,7 +53,7 @@ func (this *CommentService) GetAllCommentsByUserID(userId uuid.UUID) ([]model.Co
 //по контенту, когда пользователь хочет сделать поиск по комментам
 // только не =, а через оператор LIKE
 func (this *CommentService) GetAllCommentsByContent(content string) ([]model.Comment, error) {
-	comments, err := this.commentRepo.GetAllCommentsByContent(content)
+	comments, err := this.commentDao.GetAllCommentsByContent(content)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
@@ -61,14 +61,14 @@ func (this *CommentService) GetAllCommentsByContent(content string) ([]model.Com
 }
 
 func (this *CommentService) UpdateComment(comment *model.Comment) (*model.Comment, error) {
-	if err := this.commentRepo.UpdateComment(comment); err != nil {
+	if err := this.commentDao.UpdateComment(comment); err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 	return this.GetCommentByID(comment.ID)
 }
 
 func (this *CommentService) DeleteComment(id uuid.UUID) error {
-	if err := this.commentRepo.DeleteComment(id); err != nil {
+	if err := this.commentDao.DeleteComment(id); err != nil {
 		return &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 	return nil

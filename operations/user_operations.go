@@ -16,6 +16,7 @@ import (
 
 type UserOperations struct {
 	userService *service.UserService
+	Endpoint    string
 }
 
 func NewUserOperations(userService *service.UserService) *UserOperations {
@@ -29,7 +30,7 @@ func (this *UserOperations) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.Role = model.ROLE_USER
+	// user.Role = model.ROLE_USER
 	_, err := this.userService.CreateUser(&user)
 	if err != nil {
 		httpErr := err.(*http_errors.HttpError)
@@ -84,15 +85,46 @@ func (this *UserOperations) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *UserOperations) Me(w http.ResponseWriter, r *http.Request) {
-	token, _ := r.Cookie("token")
+	token, err := r.Cookie("token")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized) //записываем ошибку в респонс
+		return
+	}
 	var user model.User
 
 	fmt.Println(token.Value)
-	err := jwt.Unmarshal(token.Value, "supersecret", &user)
+	err = jwt.Unmarshal(token.Value, "supersecret", &user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	json.NewEncoder(w).Encode(&user) //создает новый encoder который записывает все hhttp writer, а потом записывает туда user
+}
+
+func (this *UserOperations) DeleteYourself(w http.ResponseWriter, r *http.Request) {
+	token, err := r.Cookie("token") //прочли токен
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized) //записываем ошибку в респонс
+		return
+	}
+
+	var user model.User
+	err = jwt.Unmarshal(token.Value, "supersecret", &user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	json.NewEncoder(w).Encode(&user)
+	id := r.URL.Path[len(this.Endpoint):]
+
+	if id == user.ID.String() {
+		err := this.userService.DeleteUser(user.ID)
+		if err != nil {
+			httpErr := err.(*http_errors.HttpError)
+			http.Error(w, httpErr.Error(), httpErr.Code)
+			return
+		}
+	} else {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
 }

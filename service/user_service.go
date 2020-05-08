@@ -3,19 +3,19 @@ package service
 import (
 	"net/http"
 
+	"git.01.alem.school/qjawko/forum/dao"
 	"git.01.alem.school/qjawko/forum/http_errors"
 	"git.01.alem.school/qjawko/forum/model"
-	"git.01.alem.school/qjawko/forum/repo"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
-	userRepo *repo.UserStore
+	userDao *dao.UserStore
 }
 
-func NewUserService(userRepo *repo.UserStore) *UserService {
-	return &UserService{userRepo: userRepo}
+func NewUserService(userDao *dao.UserStore) *UserService {
+	return &UserService{userDao: userDao}
 }
 
 func (this *UserService) CreateUser(u *model.User) (*model.User, error) {
@@ -30,7 +30,7 @@ func (this *UserService) CreateUser(u *model.User) (*model.User, error) {
 	u.ID = uuid.NewV4()
 	u.Password = string(hashedPass)
 
-	if err := this.userRepo.CreateUser(u); err != nil {
+	if err := this.userDao.CreateUser(u); err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 
@@ -38,7 +38,7 @@ func (this *UserService) CreateUser(u *model.User) (*model.User, error) {
 }
 
 func (this *UserService) GetUserByID(id uuid.UUID) (*model.User, error) {
-	user, err := this.userRepo.GetUser(id)
+	user, err := this.userDao.GetUser(id)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusNotFound}
 	}
@@ -47,7 +47,7 @@ func (this *UserService) GetUserByID(id uuid.UUID) (*model.User, error) {
 }
 
 func (this *UserService) GetAll() ([]model.User, error) {
-	users, err := this.userRepo.GetAllUsers()
+	users, err := this.userDao.GetAllUsers()
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
@@ -56,7 +56,7 @@ func (this *UserService) GetAll() ([]model.User, error) {
 }
 
 func (this *UserService) GetUserByUsername(username string) (*model.User, error) {
-	user, err := this.userRepo.GetUserByUsername(username)
+	user, err := this.userDao.GetUserByUsername(username)
 
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusBadRequest}
@@ -76,7 +76,7 @@ func (this *UserService) UpdateUser(u *model.User) (*model.User, error) {
 		u.Password = string(hash)
 	}
 
-	if err := this.userRepo.UpdateUser(u); err != nil {
+	if err := this.userDao.UpdateUser(u); err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 
@@ -84,7 +84,7 @@ func (this *UserService) UpdateUser(u *model.User) (*model.User, error) {
 }
 
 func (this *UserService) DeleteUser(id uuid.UUID) error {
-	if err := this.userRepo.DeleteUser(id); err != nil {
+	if err := this.userDao.DeleteUser(id); err != nil {
 		return &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 

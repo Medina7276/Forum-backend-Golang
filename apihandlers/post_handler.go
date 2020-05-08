@@ -28,6 +28,32 @@ func NewPostHandler(endpoint string, postService *service.PostService, commentSe
 	}
 }
 
+func (ph *PostHandler) Route(w http.ResponseWriter, r *http.Request) {
+	var funcToCall func(http.ResponseWriter, *http.Request)
+
+	switch r.Method {
+	case http.MethodGet:
+		endpoint := r.URL.Path[len(ph.Endpoint):]
+		if len(endpoint) == 0 {
+			funcToCall = ph.GetAll
+		} else {
+			funcToCall = ph.GetPostByID
+		}
+
+	case http.MethodPost:
+		funcToCall = ph.CreatePost
+	case http.MethodPut:
+		funcToCall = ph.checkForPostAuthority(http.HandlerFunc(ph.Update)).ServeHTTP
+	case http.MethodDelete:
+		funcToCall = ph.checkForPostAuthority(http.HandlerFunc(ph.Delete)).ServeHTTP
+	default:
+		http.Error(w, "Route Not found", http.StatusNotFound)
+		return
+	}
+
+	funcToCall(w, r)
+}
+
 func contains(roles []model.SubforumRole, id uuid.UUID) bool {
 	for _, r := range roles {
 		if r.ID == id {
@@ -38,7 +64,7 @@ func contains(roles []model.SubforumRole, id uuid.UUID) bool {
 	return false
 }
 
-func (ph *PostHandler) checkForPostDelete(next http.Handler) http.Handler {
+func (ph *PostHandler) checkForPostAuthority(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("token")
 		if err != nil {
@@ -78,32 +104,6 @@ func (ph *PostHandler) checkForPostDelete(next http.Handler) http.Handler {
 			return
 		}
 	})
-}
-
-func (ph *PostHandler) Route(w http.ResponseWriter, r *http.Request) {
-	var funcToCall func(http.ResponseWriter, *http.Request)
-
-	switch r.Method {
-	case http.MethodGet:
-		endpoint := r.URL.Path[len(ph.Endpoint):]
-		if len(endpoint) == 0 {
-			funcToCall = ph.GetAll
-		} else {
-			funcToCall = ph.GetPostByID
-		}
-
-	case http.MethodPost:
-		funcToCall = ph.CreatePost
-	case http.MethodPut:
-		funcToCall = ph.checkForPostUpdate(http.HandlerFunc(ph.Update)).ServeHTTP
-	case http.MethodDelete:
-		funcToCall = ph.checkForPostDelete(http.HandlerFunc(ph.Delete)).ServeHTTP
-	default:
-		http.Error(w, "Route Not found", http.StatusNotFound)
-		return
-	}
-
-	funcToCall(w, r)
 }
 
 //CreatePost q
@@ -220,5 +220,6 @@ func (ph *PostHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := ph.PostService.DeletePost(uuid.FromStringOrNil(id)); err != nil {
 		httpErr := err.(*http_errors.HttpError)
 		http.Error(w, httpErr.Error(), httpErr.Code)
+		return
 	}
 }

@@ -17,6 +17,5 @@ func GetUser(r *http.Request) (*model.User, error) {
 	if err := jwt.Unmarshal(cookie.Value, "supersecret", &user); err != nil {
 		return nil, err
 	}
-
 	return &user, nil
 }

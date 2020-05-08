@@ -3,25 +3,25 @@ package service
 import (
 	"net/http"
 
+	"git.01.alem.school/qjawko/forum/dao"
 	"git.01.alem.school/qjawko/forum/http_errors"
 	"git.01.alem.school/qjawko/forum/model"
-	"git.01.alem.school/qjawko/forum/repo"
 	uuid "github.com/satori/go.uuid"
 )
 
 type SubforumRoleService struct {
-	subforumService  *SubforumService
-	subforumRoleRepo *repo.SubforumRoleStore
+	subforumService *SubforumService
+	subforumRoleDao *dao.SubforumRoleStore
 }
 
 func (sr *SubforumRoleService) Create(role *model.SubforumRole) (*model.SubforumRole, error) {
-	err := sr.applyToAll(role, sr.subforumRoleRepo.Create)
+	err := sr.applyToAll(role, sr.subforumRoleDao.Create)
 
 	return role, err
 }
 
 func (sr *SubforumRoleService) GetById(id uuid.UUID) (*model.SubforumRole, error) {
-	srole, err := sr.subforumRoleRepo.GetById(id)
+	srole, err := sr.subforumRoleDao.GetById(id)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
@@ -30,7 +30,7 @@ func (sr *SubforumRoleService) GetById(id uuid.UUID) (*model.SubforumRole, error
 }
 
 func (sr *SubforumRoleService) GetBySubforumId(id uuid.UUID) ([]model.SubforumRole, error) {
-	sroles, err := sr.subforumRoleRepo.GetBySubforumId(id)
+	sroles, err := sr.subforumRoleDao.GetBySubforumId(id)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
@@ -39,7 +39,7 @@ func (sr *SubforumRoleService) GetBySubforumId(id uuid.UUID) ([]model.SubforumRo
 }
 
 func (sr *SubforumRoleService) Update(role *model.SubforumRole) (*model.SubforumRole, error) {
-	err := sr.applyToAll(role, sr.subforumRoleRepo.Update)
+	err := sr.applyToAll(role, sr.subforumRoleDao.Update)
 
 	return role, err
 }
@@ -56,7 +56,7 @@ func (sr *SubforumRoleService) Delete(id uuid.UUID) error {
 }
 
 func (sr *SubforumRoleService) deleteByRole(role *model.SubforumRole) error {
-	return sr.subforumRoleRepo.Delete(role.ID)
+	return sr.subforumRoleDao.Delete(role.ID)
 }
 
 func (sr *SubforumRoleService) applyToAll(role *model.SubforumRole, f func(*model.SubforumRole) error) error {

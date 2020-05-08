@@ -21,7 +21,6 @@ func Unauthorized(next http.Handler) http.Handler {
 			http.Error(w, "You are already authorized!", http.StatusConflict)
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -37,10 +36,26 @@ func Authorization(next http.Handler) http.Handler {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
+
+// func CheckForAdmin(next http.Handler) http.Handler {
+
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+// 		cookie, err := r.Cookie("token") //check if token in request
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusUnauthorized)
+// 			return
+// 		}
+
+// 		var user model.User
+// 		if err := jwt.Unmarshal(cookie.Value, "supersecret", user); err != nil {
+// 			http.Error(w, err.Error(), http.StatusBadRequest)
+// 		}
+
+// 	})
+// }
 
 // func CheckForAdmin(next http.Handler) http.Handler {
 // 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
