@@ -6,9 +6,9 @@ import (
 
 	"git.01.alem.school/qjawko/forum/dto"
 	"git.01.alem.school/qjawko/forum/http_errors"
-	"git.01.alem.school/qjawko/forum/jwt"
 	"git.01.alem.school/qjawko/forum/model"
 	"git.01.alem.school/qjawko/forum/service"
+	"git.01.alem.school/qjawko/forum/utils"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -28,32 +28,6 @@ func NewPostHandler(endpoint string, postService *service.PostService, commentSe
 	}
 }
 
-func (ph *PostHandler) Route(w http.ResponseWriter, r *http.Request) {
-	var funcToCall func(http.ResponseWriter, *http.Request)
-
-	switch r.Method {
-	case http.MethodGet:
-		endpoint := r.URL.Path[len(ph.Endpoint):]
-		if len(endpoint) == 0 {
-			funcToCall = ph.GetAll
-		} else {
-			funcToCall = ph.GetPostByID
-		}
-
-	case http.MethodPost:
-		funcToCall = ph.CreatePost
-	case http.MethodPut:
-		funcToCall = ph.checkForPostAuthority(http.HandlerFunc(ph.Update)).ServeHTTP
-	case http.MethodDelete:
-		funcToCall = ph.checkForPostAuthority(http.HandlerFunc(ph.Delete)).ServeHTTP
-	default:
-		http.Error(w, "Route Not found", http.StatusNotFound)
-		return
-	}
-
-	funcToCall(w, r)
-}
-
 func contains(roles []model.SubforumRole, id uuid.UUID) bool {
 	for _, r := range roles {
 		if r.ID == id {
@@ -66,15 +40,9 @@ func contains(roles []model.SubforumRole, id uuid.UUID) bool {
 
 func (ph *PostHandler) checkForPostAuthority(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("token")
+		user, err := utils.GetUser(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		var user model.User
-		if err := jwt.Unmarshal(cookie.Value, "supersecret", user); err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -106,6 +74,32 @@ func (ph *PostHandler) checkForPostAuthority(next http.Handler) http.Handler {
 	})
 }
 
+func (ph *PostHandler) Route(w http.ResponseWriter, r *http.Request) {
+	var funcToCall func(http.ResponseWriter, *http.Request)
+
+	switch r.Method {
+	case http.MethodGet:
+		endpoint := r.URL.Path[len(ph.Endpoint):]
+		if len(endpoint) == 0 {
+			funcToCall = ph.GetAll
+		} else {
+			funcToCall = ph.GetPostByID
+		}
+
+	case http.MethodPost:
+		funcToCall = ph.CreatePost
+	case http.MethodPut:
+		funcToCall = ph.checkForPostAuthority(http.HandlerFunc(ph.Update)).ServeHTTP
+	case http.MethodDelete:
+		funcToCall = ph.checkForPostAuthority(http.HandlerFunc(ph.Delete)).ServeHTTP
+	default:
+		http.Error(w, "Route Not found", http.StatusNotFound)
+		return
+	}
+
+	funcToCall(w, r)
+}
+
 //CreatePost q
 func (ph *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	var post model.Post
@@ -127,37 +121,26 @@ func (ph *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 //GetAll qwe
 func (ph *PostHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-
-	userID := r.FormValue("userid")
-	subforumID := r.FormValue("subforumid")
-
-	if userID != "" {
-		posts, err := ph.PostService.GetUserPosts(uuid.FromStringOrNil(userID))
-		if err != nil {
-			httpErr := err.(*http_errors.HttpError)
-			http.Error(w, httpErr.Error(), httpErr.Code)
-			return
-		}
-		json.NewEncoder(w).Encode(posts)
-		return
-	}
-
-	if subforumID != "" {
-		posts, err := ph.PostService.GetAllPostsBySubforumId(uuid.FromStringOrNil(subforumID))
-		if err != nil {
-			httpErr := err.(*http_errors.HttpError)
-			http.Error(w, httpErr.Error(), httpErr.Code)
-			return
-		}
-		json.NewEncoder(w).Encode(posts)
-		return
-	}
-
 	posts, err := ph.PostService.GetAllPosts()
 	if err != nil {
 		httpErr := err.(*http_errors.HttpError)
 		http.Error(w, httpErr.Error(), httpErr.Code)
 		return
+	}
+
+	userID := r.FormValue("userid")
+	subforumID := r.FormValue("subforumid")
+
+	if userID != "" {
+		posts = utils.PostsFilter(posts, func(post model.Post) bool {
+			return post.UserID == uuid.FromStringOrNil(userID)
+		})
+	}
+
+	if subforumID != "" {
+		posts = utils.PostsFilter(posts, func(post model.Post) bool {
+			return post.SubofrumID == uuid.FromStringOrNil(subforumID)
+		})
 	}
 
 	json.NewEncoder(w).Encode(posts)

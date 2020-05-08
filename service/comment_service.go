@@ -26,6 +26,15 @@ func (this *CommentService) CreateComment(comment *model.Comment) (*model.Commen
 	return comment, nil
 }
 
+func (this *CommentService) GetAllComments() ([]model.Comment, error) {
+	comments, err := this.commentDao.GetAllComments()
+	if err != nil {
+		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
+	}
+
+	return comments, nil
+}
+
 func (this *CommentService) GetCommentByID(Id uuid.UUID) (*model.Comment, error) {
 	comment, err := this.commentDao.GetCommentByID(Id)
 	if err != nil {

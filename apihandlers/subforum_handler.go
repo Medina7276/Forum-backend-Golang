@@ -9,7 +9,7 @@ import (
 	"git.01.alem.school/qjawko/forum/http_errors"
 	"git.01.alem.school/qjawko/forum/model"
 	"git.01.alem.school/qjawko/forum/service"
-	"git.01.alem.school/qjawko/forum/util"
+	"git.01.alem.school/qjawko/forum/utils"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -74,7 +74,7 @@ func (sh *SubforumHandler) CreateSubforum(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user, err := util.GetUser(r)
+	user, err := utils.GetUser(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

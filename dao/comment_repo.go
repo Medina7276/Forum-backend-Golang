@@ -25,6 +25,34 @@ func (store *CommentStore) CreateComment(comment *model.Comment) error {
 	return err
 }
 
+func (store *CommentStore) GetAllComments() ([]model.Comment, error) {
+	comments := []model.Comment{}
+
+	rows, err := store.Query(`
+		SELECT id, postid, userid, content, creationdate
+		FROM comments
+	`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var comment model.Comment
+
+		err := rows.Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Content,
+			&comment.CreationDate)
+
+		if err != nil {
+			return nil, err
+		}
+
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
+}
+
 func (store *CommentStore) GetCommentByID(id uuid.UUID) (*model.Comment, error) {
 	comment := &model.Comment{}
 
