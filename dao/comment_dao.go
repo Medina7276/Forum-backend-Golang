@@ -13,6 +13,7 @@ type CommentStore struct {
 	*sql.DB
 }
 
+//data access object
 func NewCommentStore(db *sql.DB) *CommentStore {
 	return &CommentStore{DB: db}
 }

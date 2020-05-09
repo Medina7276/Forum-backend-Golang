@@ -123,22 +123,23 @@ func (store *PostStore) GetAllPosts() ([]model.Post, error) {
 }
 
 func (store *PostStore) UpdatePost(post *model.Post) error {
-	res, err := store.Exec(`UPDATE parentid = ?, title = ?, content = ?, creationdate = ?, subforumid = ?
-	WHERE id = ?`, post.ParentID, post.Title, post.Content,
-		post.CreationDate, post.SubofrumID, post.UserID, post.ID)
+	res, err := store.Exec(`
+	UPDATE parentid = ?, title = ?, content = ?, creationdate = ?, subforumid = ?
+	WHERE id = ?`,
+		post.ParentID, post.Title,
+		post.Content, post.CreationDate,
+		post.SubofrumID, post.UserID, post.ID)
 	if err != nil {
 		return err
 	}
+
 	n, err := res.RowsAffected()
-
 	if err != nil {
 		return err
 	}
-
 	if n == 0 {
 		return fmt.Errorf("Post with id %v not found", post.ID)
 	}
-
 	return err
 }
 
