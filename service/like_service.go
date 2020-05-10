@@ -18,7 +18,6 @@ func NewLikeService(likeDao *dao.LikeStore) *LikeService {
 }
 
 func (this *LikeService) CreateLike(like *model.Like) (*model.Like, error) {
-
 	like.ID = uuid.NewV4()
 
 	if err := this.likeDao.CreateLike(like); err != nil {
@@ -45,9 +44,7 @@ func (this *LikeService) UpdateLike(like *model.Like) (*model.Like, error) {
 }
 
 func (this *LikeService) DeleteLike(id uuid.UUID) error {
+	err := this.likeDao.DeleteLike(id)
 
-	if err := this.likeDao.DeleteLike(id); err != nil {
-		return &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
-	}
-
+	return err
 }
