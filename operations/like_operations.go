@@ -13,6 +13,12 @@ type LikeOperations struct {
 	likeService *service.LikeService
 }
 
+func NewLikeOperations(likeService *service.LikeService) *LikeOperations {
+	return &LikeOperations{
+		likeService: likeService,
+	}
+}
+
 func (lo *LikeOperations) Rate(w http.ResponseWriter, r *http.Request) {
 	var newrate model.Like
 	if err := json.NewDecoder(r.Body).Decode(&newrate); err != nil {

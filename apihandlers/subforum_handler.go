@@ -156,6 +156,7 @@ func (sh *SubforumHandler) GetSubforumByName(w http.ResponseWriter, r *http.Requ
 }
 
 func (sh *SubforumHandler) Update(w http.ResponseWriter, r *http.Request) {
+
 	var subforum model.Subforum
 	if err := json.NewDecoder(r.Body).Decode(&subforum); err != nil {
 		http.Error(w, "Bad Body", http.StatusBadRequest)
@@ -176,6 +177,7 @@ func (sh *SubforumHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sh *SubforumHandler) Delete(w http.ResponseWriter, r *http.Request) {
+
 	id := r.URL.Path[len(sh.Endpoint):]
 	if err := sh.SubforumService.DeleteSubforum(uuid.FromStringOrNil(id)); err != nil {
 		httpErr := err.(*http_errors.HttpError)

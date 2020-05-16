@@ -14,6 +14,10 @@ type SubforumRoleService struct {
 	subforumRoleDao *dao.SubforumRoleStore
 }
 
+func NewSubforumRoleService(subforumRoleDao *dao.SubforumRoleStore) *SubforumRoleService {
+	return &SubforumRoleService{subforumRoleDao: subforumRoleDao}
+}
+
 func (sr *SubforumRoleService) Create(role *model.SubforumRole) (*model.SubforumRole, error) {
 	err := sr.applyToAll(role, sr.subforumRoleDao.Create)
 
@@ -38,24 +42,24 @@ func (sr *SubforumRoleService) GetBySubforumId(id uuid.UUID) ([]model.SubforumRo
 	return sroles, err
 }
 
-func (sr *SubforumRoleService) Update(role *model.SubforumRole) (*model.SubforumRole, error) {
+func (sr *SubforumRoleService) UpdateSubforumRole(role *model.SubforumRole) (*model.SubforumRole, error) {
 	err := sr.applyToAll(role, sr.subforumRoleDao.Update)
 
 	return role, err
 }
 
-func (sr *SubforumRoleService) Delete(id uuid.UUID) error {
+func (sr *SubforumRoleService) DeleteSubforumRoleById(id uuid.UUID) error {
 	role, err := sr.GetById(id)
 	if err != nil {
 		return &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 
-	err = sr.applyToAll(role, sr.deleteByRole)
+	err = sr.applyToAll(role, sr.deleteSubForumRole)
 
 	return err
 }
 
-func (sr *SubforumRoleService) deleteByRole(role *model.SubforumRole) error {
+func (sr *SubforumRoleService) deleteSubForumRole(role *model.SubforumRole) error {
 	return sr.subforumRoleDao.Delete(role.ID)
 }
 
