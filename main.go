@@ -28,16 +28,17 @@ func main() {
 
 	//SERVICES
 	userService := service.NewUserService(userDao)
-	subforumService := service.NewSubforumService(subforumDao)
+	subforumService := service.NewSubforumService(subforumDao, nil)
 	postService := service.NewPostService(postDao)
 	commentService := service.NewCommentService(commentDao)
-	subforumRoleService := service.NewSubforumRoleService(subforumRoleDao)
+	subforumRoleService := service.NewSubforumRoleService(subforumRoleDao, subforumService)
+	subforumService.SubforumRoleService = subforumRoleService
 	likeService := service.NewLikeService(likeDao)
 	//HANDLERS
 	userHandler := apihandlers.NewUserHandler("/api/user/", userService)
 	http.Handle("/api/user/", middleware.ContentTypeJson(http.HandlerFunc(userHandler.Route)))
 
-	subforumHandler := apihandlers.NewSubforumHandler("/api/subforum/", subforumService, postService)
+	subforumHandler := apihandlers.NewSubforumHandler("/api/subforum/", subforumService, postService, subforumRoleService)
 	http.Handle("/api/subforum/", middleware.ContentTypeJson(http.HandlerFunc(subforumHandler.Route)))
 
 	postHandler := apihandlers.NewPostHandler("/api/post/", postService, commentService)
@@ -49,8 +50,8 @@ func main() {
 	likeOps := operations.NewLikeOperations(likeService)
 	userOps := operations.NewUserOperations(userService)
 	http.Handle("/rate", middleware.ContentTypeJson(middleware.Authorization(http.HandlerFunc(likeOps.Rate))))
-	http.Handle("/login", middleware.ContentTypeJson(middleware.Unauthorized(http.HandlerFunc(userOps.Login))))
-	http.Handle("/register", middleware.ContentTypeJson(middleware.Unauthorized(http.HandlerFunc(userOps.Register))))
+	http.Handle("/login", middleware.ContentTypeJson(http.HandlerFunc(userOps.Login)))
+	http.Handle("/register", middleware.ContentTypeJson(http.HandlerFunc(userOps.Register)))
 	http.Handle("/me", middleware.ContentTypeJson(middleware.Authorization(http.HandlerFunc(userOps.Me))))
 
 	fmt.Println("Listening on port :8080")

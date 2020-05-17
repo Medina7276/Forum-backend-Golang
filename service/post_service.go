@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"time"
 
 	"git.01.alem.school/qjawko/forum/dao"
 	"git.01.alem.school/qjawko/forum/http_errors"
@@ -19,6 +20,7 @@ func NewPostService(postDao *dao.PostStore) *PostService {
 
 func (this *PostService) CreatePost(post *model.Post) (*model.Post, error) {
 	post.ID = uuid.NewV4()
+	post.CreationDate = time.Now().Unix()
 
 	if err := this.postDao.CreatePost(post); err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}

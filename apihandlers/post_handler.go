@@ -53,7 +53,7 @@ func (ph *PostHandler) checkForPostAuthority(next http.Handler) http.Handler {
 			return
 		}
 
-		subforum, err := ph.SubforumService.GetSubforumById(post.SubofrumID)
+		subforum, err := ph.SubforumService.GetSubforumById(post.SubforumID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -139,7 +139,7 @@ func (ph *PostHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	if subforumID != "" {
 		posts = utils.PostsFilter(posts, func(post model.Post) bool {
-			return post.SubofrumID == uuid.FromStringOrNil(subforumID)
+			return post.SubforumID == uuid.FromStringOrNil(subforumID)
 		})
 	}
 
@@ -170,7 +170,7 @@ func (ph *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 		Title:        post.Title,
 		Content:      post.Content,
 		CreationDate: post.CreationDate,
-		SubofrumID:   post.SubofrumID,
+		SubofrumID:   post.SubforumID,
 		UserID:       post.UserID,
 		Comments:     comments,
 	}

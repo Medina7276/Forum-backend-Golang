@@ -14,8 +14,11 @@ type SubforumRoleService struct {
 	subforumRoleDao *dao.SubforumRoleStore
 }
 
-func NewSubforumRoleService(subforumRoleDao *dao.SubforumRoleStore) *SubforumRoleService {
-	return &SubforumRoleService{subforumRoleDao: subforumRoleDao}
+func NewSubforumRoleService(subforumRoleDao *dao.SubforumRoleStore, service *SubforumService) *SubforumRoleService {
+	return &SubforumRoleService{
+		subforumRoleDao: subforumRoleDao,
+		subforumService: service,
+	}
 }
 
 func (sr *SubforumRoleService) Create(role *model.SubforumRole) (*model.SubforumRole, error) {

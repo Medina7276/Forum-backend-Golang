@@ -101,8 +101,7 @@ func (srh *SubforumRoleHandler) DeleteSRole(w http.ResponseWriter, r *http.Reque
 
 	id := r.URL.Path[len(srh.Endpoint):]
 	if err := srh.SubforumRoleService.DeleteSubforumRoleById(uuid.FromStringOrNil(id)); err != nil {
-		httpErr := err.(*http_errors.HttpError)
-		http.Error(w, httpErr.Error(), httpErr.Code)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

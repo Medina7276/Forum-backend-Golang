@@ -21,7 +21,7 @@ func NewSubforumStore(db *sql.DB) *SubforumStore {
 //CreateSubforum dfjn
 func (store *SubforumStore) CreateSubforum(subforum *model.Subforum) error {
 	_, err := store.Exec(`INSERT INTO subforum (id, name, description, parentid) 
-	VALUES (?, ?, ?)`,
+	VALUES (?, ?, ?, ?)`,
 		subforum.ID, subforum.Name, subforum.Description, subforum.ParentID)
 	return err
 }
@@ -40,7 +40,7 @@ func (store *SubforumStore) GetSubforumById(id uuid.UUID) (*model.Subforum, erro
 }
 
 func (store *SubforumStore) GetSubforumByParentId(parentId uuid.UUID) ([]model.Subforum, error) {
-	subforums := []model.Subforum{}
+	var subforums []model.Subforum
 
 	rows, err := store.Query(`
 	SELECT id, name, description, parentid
@@ -105,7 +105,7 @@ func (store *SubforumStore) GetAllSubforums() ([]model.Subforum, error) {
 //UpdateSubforum erlgj
 func (store *SubforumStore) UpdateSubforum(subforum *model.Subforum) error {
 	res, err := store.Exec(`UPDATE subforum SET name = ?, description = ?, parentid = ?
-	WHERE id = ?`, subforum.Name, subforum.Description, subforum.ID, subforum.ParentID)
+	WHERE id = ?`, subforum.Name, subforum.Description, subforum.ParentID, subforum.ID)
 	if err != nil {
 		return err
 	}

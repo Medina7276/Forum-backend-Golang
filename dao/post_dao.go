@@ -17,10 +17,10 @@ func NewPostStore(db *sql.DB) *PostStore {
 }
 
 func (store *PostStore) CreatePost(post *model.Post) error {
-	_, err := store.Exec(`INSERT INTO posts (id, parentid, title, content, creationdate, subforumid, userid) 
-	VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		post.ID, post.ParentID, post.Title, post.Content,
-		post.CreationDate, post.SubofrumID, post.UserID)
+	_, err := store.Exec(`INSERT INTO posts (id, title, content, creationdate, subforumid, userid) 
+	VALUES (?, ?, ?, ?, ?, ?)`,
+		post.ID, post.Title, post.Content,
+		post.CreationDate, post.SubforumID, post.UserID)
 
 	return err
 }
@@ -29,12 +29,12 @@ func (store *PostStore) GetPostById(id uuid.UUID) (*model.Post, error) {
 	post := &model.Post{}
 
 	row := store.QueryRow(`
-	SELECT id, parentid, title, content, creationdate, subforumid, userid 
+	SELECT id, title, content, creationdate, subforumid, userid 
 	FROM posts
 	WHERE id = ?`, id)
 
-	err := row.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
-		&post.CreationDate, &post.SubofrumID, &post.UserID)
+	err := row.Scan(&post.ID, &post.Title, &post.Content,
+		&post.CreationDate, &post.SubforumID, &post.UserID)
 
 	return post, err
 }
@@ -43,7 +43,7 @@ func (store *PostStore) GetAllPostsByUserId(userID uuid.UUID) ([]model.Post, err
 	posts := []model.Post{}
 
 	rows, err := store.Query(`
-	SELECT id, parentid, title, content, creationdate, subforumid, userid 
+	SELECT id, title, content, creationdate, subforumid, userid 
 	FROM posts
 	WHERE userid = ?`, userID)
 
@@ -54,8 +54,8 @@ func (store *PostStore) GetAllPostsByUserId(userID uuid.UUID) ([]model.Post, err
 	for rows.Next() {
 		var post model.Post
 
-		err := rows.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
-			&post.CreationDate, &post.SubofrumID, &post.UserID)
+		err := rows.Scan(&post.ID, &post.Title, &post.Content,
+			&post.CreationDate, &post.SubforumID, &post.UserID)
 
 		if err != nil {
 			return nil, err
@@ -71,9 +71,9 @@ func (store *PostStore) GetAllPostsBySubforumId(subforumID uuid.UUID) ([]model.P
 	posts := []model.Post{}
 
 	rows, err := store.Query(`
-	SELECT id, parentid, title, content, creationdate, subforumid, userid 
+	SELECT id, title, content, creationdate, subforumid, userid 
 	FROM posts
-	WHERE subforumid = ? AND parentid = NULL`, subforumID)
+	WHERE subforumid = ?`, subforumID)
 
 	if err != nil {
 		return nil, err
@@ -82,8 +82,8 @@ func (store *PostStore) GetAllPostsBySubforumId(subforumID uuid.UUID) ([]model.P
 	for rows.Next() {
 		var post model.Post
 
-		err := rows.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
-			&post.CreationDate, &post.SubofrumID, &post.UserID)
+		err := rows.Scan(&post.ID, &post.Title, &post.Content,
+			&post.CreationDate, &post.SubforumID, &post.UserID)
 
 		if err != nil {
 			return nil, err
@@ -96,10 +96,10 @@ func (store *PostStore) GetAllPostsBySubforumId(subforumID uuid.UUID) ([]model.P
 }
 
 func (store *PostStore) GetAllPosts() ([]model.Post, error) {
-	posts := []model.Post{}
+	var posts []model.Post
 
 	rows, err := store.Query(`
-	SELECT id, parentid, title, content, creationdate, subforumid, userid 
+	SELECT id, title, content, creationdate, subforumid, userid 
 	FROM posts`)
 
 	if err != nil {
@@ -109,8 +109,8 @@ func (store *PostStore) GetAllPosts() ([]model.Post, error) {
 	for rows.Next() {
 		var post model.Post
 
-		err := rows.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
-			&post.CreationDate, &post.SubofrumID, &post.UserID)
+		err := rows.Scan(&post.ID, &post.Title, &post.Content,
+			&post.CreationDate, &post.SubforumID, &post.UserID)
 
 		if err != nil {
 			return nil, err
@@ -124,11 +124,11 @@ func (store *PostStore) GetAllPosts() ([]model.Post, error) {
 
 func (store *PostStore) UpdatePost(post *model.Post) error {
 	res, err := store.Exec(`
-	UPDATE parentid = ?, title = ?, content = ?, creationdate = ?, subforumid = ?
+	UPDATE posts SET title = ?, content = ?, creationdate = ?, subforumid = ?
 	WHERE id = ?`,
-		post.ParentID, post.Title,
+		post.Title,
 		post.Content, post.CreationDate,
-		post.SubofrumID, post.UserID, post.ID)
+		post.SubforumID, post.UserID, post.ID)
 	if err != nil {
 		return err
 	}

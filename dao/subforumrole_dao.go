@@ -31,7 +31,7 @@ func (store *SubforumRoleStore) GetById(id uuid.UUID) (*model.SubforumRole, erro
 
 	row := store.QueryRow(`SELECT id, userId, role, subforumId FROM subforumrole WHERE id = ?`, id)
 
-	err := row.Scan(role.ID, role.UserID, role.Role, role.SubforumID)
+	err := row.Scan(&role.ID, &role.UserID, &role.Role, &role.SubforumID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,14 +48,14 @@ func (store *SubforumRoleStore) GetBySubforumId(id uuid.UUID) ([]model.SubforumR
 	}
 
 	for rows.Next() {
-		var role *model.SubforumRole
+		var role model.SubforumRole
 
-		err := rows.Scan(role.ID, role.UserID, role.Role, role.SubforumID)
+		err := rows.Scan(&role.ID, &role.UserID, &role.Role, &role.SubforumID)
 		if err != nil {
 			return nil, err
 		}
 
-		roles = append(roles, *role)
+		roles = append(roles, role)
 	}
 
 	return roles, nil
@@ -70,14 +70,14 @@ func (store *SubforumRoleStore) GetAll() ([]model.SubforumRole, error) {
 	}
 
 	for rows.Next() {
-		var role *model.SubforumRole
+		var role model.SubforumRole
 
-		err := rows.Scan(role.ID, role.UserID, role.Role, role.SubforumID)
+		err := rows.Scan(&role.ID, &role.UserID, &role.Role, &role.SubforumID)
 		if err != nil {
 			return nil, err
 		}
 
-		roles = append(roles, *role)
+		roles = append(roles, role)
 	}
 
 	return roles, nil

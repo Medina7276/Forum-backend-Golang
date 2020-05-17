@@ -18,9 +18,9 @@ func NewUserStore(db *sql.DB) *UserStore {
 
 func (store *UserStore) CreateUser(user *model.User) error {
 	_, err := store.Exec(`INSERT INTO users (id, username, email, name, password, avatarurl) 
-	VALUES (?, ?, ?, ?, ?, ?, ?)`,
+	VALUES (?, ?, ?, ?, ?, ?)`,
 		user.ID, user.Username, user.Email, user.Name,
-		user.Password, user.AvatarURL, user)
+		user.Password, user.AvatarURL)
 
 	return err
 }
@@ -81,8 +81,7 @@ func (store *UserStore) GetAllUsers() ([]model.User, error) {
 
 func (store *UserStore) UpdateUser(user *model.User) error {
 	res, err := store.Exec(`UPDATE users SET username = ?, email = ?, name = ?, 
-	password = ?, avatarurl = ?, role = ?  
-	WHERE id = ?`, user.Username, user.Email, user.Name,
+	password = ?, avatarurl = ? WHERE id = ?`, user.Username, user.Email, user.Name,
 		user.Password, user.AvatarURL, user.ID)
 	if err != nil {
 		return err

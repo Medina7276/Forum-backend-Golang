@@ -11,11 +11,14 @@ import (
 
 type SubforumService struct {
 	subforumDao         *dao.SubforumStore
-	subforumRoleService *SubforumRoleService
+	SubforumRoleService *SubforumRoleService
 }
 
-func NewSubforumService(subforumDao *dao.SubforumStore) *SubforumService {
-	return &SubforumService{subforumDao: subforumDao}
+func NewSubforumService(subforumDao *dao.SubforumStore, service *SubforumRoleService) *SubforumService {
+	return &SubforumService{
+		subforumDao:         subforumDao,
+		SubforumRoleService: service,
+	}
 }
 
 func (this *SubforumService) CreateSubforum(s *model.Subforum) (*model.Subforum, error) {
@@ -24,14 +27,15 @@ func (this *SubforumService) CreateSubforum(s *model.Subforum) (*model.Subforum,
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 
-	sroles, err := this.subforumRoleService.GetBySubforumId(s.ParentID)
+	sroles, err := this.SubforumRoleService.GetBySubforumId(s.ParentID)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusInternalServerError}
 	}
 
 	for _, srole := range sroles {
+		srole.ID = uuid.NewV4()
 		srole.SubforumID = s.ID
-		_, err := this.subforumRoleService.Create(&srole)
+		_, err := this.SubforumRoleService.Create(&srole)
 		if err != nil {
 			return nil, err
 		}
