@@ -17,9 +17,9 @@ func NewPostStore(db *sql.DB) *PostStore {
 }
 
 func (store *PostStore) CreatePost(post *model.Post) error {
-	_, err := store.Exec(`INSERT INTO posts (id, parentid, title, content, creationdate, subforumid, userid) 
+	_, err := store.Exec(`INSERT INTO posts (id, title, content, creationdate, subforumid, userid) 
 	VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		post.ID, post.ParentID, post.Title, post.Content,
+		post.ID, post.Title, post.Content,
 		post.CreationDate, post.SubofrumID, post.UserID)
 
 	return err
@@ -29,11 +29,11 @@ func (store *PostStore) GetPostById(id uuid.UUID) (*model.Post, error) {
 	post := &model.Post{}
 
 	row := store.QueryRow(`
-	SELECT id, parentid, title, content, creationdate, subforumid, userid 
+	SELECT id, title, content, creationdate, subforumid, userid 
 	FROM posts
 	WHERE id = ?`, id)
 
-	err := row.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
+	err := row.Scan(&post.ID, &post.Title, &post.Content,
 		&post.CreationDate, &post.SubofrumID, &post.UserID)
 
 	return post, err
@@ -54,7 +54,7 @@ func (store *PostStore) GetAllPostsByUserId(userID uuid.UUID) ([]model.Post, err
 	for rows.Next() {
 		var post model.Post
 
-		err := rows.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
+		err := rows.Scan(&post.ID, &post.Title, &post.Content,
 			&post.CreationDate, &post.SubofrumID, &post.UserID)
 
 		if err != nil {
@@ -82,7 +82,7 @@ func (store *PostStore) GetAllPostsBySubforumId(subforumID uuid.UUID) ([]model.P
 	for rows.Next() {
 		var post model.Post
 
-		err := rows.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
+		err := rows.Scan(&post.ID, &post.Title, &post.Content,
 			&post.CreationDate, &post.SubofrumID, &post.UserID)
 
 		if err != nil {
@@ -109,7 +109,7 @@ func (store *PostStore) GetAllPosts() ([]model.Post, error) {
 	for rows.Next() {
 		var post model.Post
 
-		err := rows.Scan(&post.ID, &post.ParentID, &post.Title, &post.Content,
+		err := rows.Scan(&post.ID, &post.Title, &post.Content,
 			&post.CreationDate, &post.SubofrumID, &post.UserID)
 
 		if err != nil {
@@ -124,10 +124,9 @@ func (store *PostStore) GetAllPosts() ([]model.Post, error) {
 
 func (store *PostStore) UpdatePost(post *model.Post) error {
 	res, err := store.Exec(`
-	UPDATE parentid = ?, title = ?, content = ?, creationdate = ?, subforumid = ?
+	UPDATE  title = ?, content = ?, creationdate = ?, subforumid = ?
 	WHERE id = ?`,
-		post.ParentID, post.Title,
-		post.Content, post.CreationDate,
+		post.Title, post.Content, post.CreationDate,
 		post.SubofrumID, post.UserID, post.ID)
 	if err != nil {
 		return err
