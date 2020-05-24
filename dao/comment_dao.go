@@ -31,7 +31,7 @@ func (store *CommentStore) GetAllComments() ([]model.Comment, error) {
 
 	rows, err := store.Query(`
 		SELECT id, postid, userid, content, creationdate
-		FROM comments
+		FROM comment
 	`)
 
 	if err != nil {
@@ -59,7 +59,7 @@ func (store *CommentStore) GetCommentByID(id uuid.UUID) (*model.Comment, error) 
 
 	row := store.QueryRow(`
 	SELECT id, postid, userid, content, creationdate
-	FROM comments
+	FROM comment
 	WHERE id = ?`, id)
 
 	err := row.Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Content,
@@ -73,7 +73,7 @@ func (store *CommentStore) GetAllCommentsByPostID(postId uuid.UUID) ([]model.Com
 
 	rows, err := store.Query(`
 	SELECT id, postid, userid, content, creationdate
-	FROM comments
+	FROM comment
 	WHERE postid = ?`, postId)
 
 	if err != nil {
@@ -99,7 +99,7 @@ func (store *CommentStore) GetAllCommentsByUserID(userId uuid.UUID) ([]model.Com
 
 	rows, err := store.Query(`
 	SELECT id, postid, userid, content, creationdate 
-	FROM comments
+	FROM comment
 	WHERE userid = ?`, userId)
 
 	if err != nil {
@@ -126,7 +126,7 @@ func (store *CommentStore) GetAllCommentsByContent(content string) ([]model.Comm
 
 	rows, err := store.Query(` 
 	SELECT id, postid, userid, content, creationdate 
-	FROM comments
+	FROM comment
 	WHERE content Like '%?%'`, content)
 	//To query data based on partial information, you use the LIKE
 	if err != nil {
@@ -147,7 +147,7 @@ func (store *CommentStore) GetAllCommentsByContent(content string) ([]model.Comm
 
 func (store *CommentStore) UpdateComment(comment *model.Comment) error {
 
-	res, err := store.Exec(`UPDATE postid = ?, userid = ?, content = ?, creationdate = ?
+	res, err := store.Exec(`UPDATE comment SET  postid = ?, userid = ?, content = ?, creationdate = ?
 	WHERE id = ?`, comment.PostID, comment.UserID, comment.Content,
 		comment.CreationDate, comment.ID)
 
@@ -169,7 +169,7 @@ func (store *CommentStore) UpdateComment(comment *model.Comment) error {
 }
 
 func (store *CommentStore) DeleteComment(id uuid.UUID) error {
-	rows, err := store.Exec(`DELETE FROM comments WHERE Id = ?`, id)
+	rows, err := store.Exec(`DELETE FROM comment WHERE Id = ?`, id)
 	if err != nil {
 		return err
 	}

@@ -21,7 +21,7 @@ func NewLikeStore(db *sql.DB) *LikeStore {
 //CreateLike like
 func (store *LikeStore) CreateLike(like *model.Like) error {
 
-	_, err := store.Exec(`INSERT INTO likes (id, userid, postid, isupvote) VALUES (?, ?, ?, ?)`,
+	_, err := store.Exec(`INSERT INTO like (id, userid, postid, isupvote) VALUES (?, ?, ?, ?)`,
 		like.ID, like.UserID, like.PostID, like.IsUpVote)
 	return err
 }
@@ -33,7 +33,7 @@ func (store *LikeStore) GetLikeByID(id uuid.UUID) (*model.Like, error) {
 
 	row := store.QueryRow(`
 	SELECT id, userid, postid, isupvote
-	FROM likes
+	FROM like
 	WHERE id = ?`, id)
 
 	err := row.Scan(&like.ID, &like.UserID, &like.PostID, &like.IsUpVote)
@@ -43,7 +43,7 @@ func (store *LikeStore) GetLikeByID(id uuid.UUID) (*model.Like, error) {
 //UpdateLike ul
 func (store *LikeStore) UpdateLike(like *model.Like) error {
 
-	res, err := store.Exec(`UPDATE id = ?, userid = ?, postid = ?, isupvote = ?
+	res, err := store.Exec(`UPDATE like SET id = ?, userid = ?, postid = ?, isupvote = ?
 	WHERE id = ?`, like.ID, like.UserID, like.PostID, like.IsUpVote)
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func (store *LikeStore) UpdateLike(like *model.Like) error {
 //DeleteLike delete
 func (store *LikeStore) DeleteLike(id uuid.UUID) error {
 
-	rows, err := store.Exec(`DELETE FROM likes WHERE id = ?`, id)
+	rows, err := store.Exec(`DELETE FROM like WHERE id = ?`, id)
 	if err != nil {
 		return err
 	}
