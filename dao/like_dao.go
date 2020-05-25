@@ -40,6 +40,32 @@ func (store *LikeStore) GetLikeByID(id uuid.UUID) (*model.Like, error) {
 	return like, err
 }
 
+func (store *LikeStore) GetLikesByPostId(id uuid.UUID) ([]model.Like, error) {
+
+	var likes []model.Like
+
+	rows, err := store.Query(`
+	SELECT id, userid, postid, isupvote
+	FROM like
+	WHERE postid = ?`, id)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var like model.Like
+
+		err := rows.Scan(&like.ID, &like.UserID, &like.PostID, &like.IsUpVote)
+		if err != nil {
+			return nil, err
+		}
+
+		likes = append(likes, like)
+	}
+
+	return likes, nil
+}
+
 //UpdateLike ul
 func (store *LikeStore) UpdateLike(like *model.Like) error {
 

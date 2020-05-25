@@ -27,12 +27,15 @@ func (this *LikeService) CreateLike(like *model.Like) (*model.Like, error) {
 }
 
 func (this *LikeService) GetLikeByID(id uuid.UUID) (*model.Like, error) {
-
 	like, err := this.likeDao.GetLikeByID(id)
 	if err != nil {
 		return nil, &http_errors.HttpError{Err: err, Code: http.StatusNotFound}
 	}
 	return like, nil
+}
+
+func (this *LikeService) GetLikesByPostID(id uuid.UUID) ([]model.Like, error) {
+	return this.likeDao.GetLikesByPostId(id)
 }
 
 func (this *LikeService) UpdateLike(like *model.Like) (*model.Like, error) {

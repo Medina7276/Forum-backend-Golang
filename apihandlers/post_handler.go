@@ -16,15 +16,28 @@ type PostHandler struct {
 	SubforumService     *service.SubforumService
 	SubforumRoleService *service.SubforumRoleService
 	PostService         *service.PostService
+	UserService         *service.UserService
+	likeService         *service.LikeService
 	CommentService      *service.CommentService
 	Endpoint            string
 }
 
-func NewPostHandler(endpoint string, postService *service.PostService, commentService *service.CommentService) *PostHandler {
+func NewPostHandler(endpoint string,
+	likeService *service.LikeService,
+	postService *service.PostService,
+	commentService *service.CommentService,
+	userService *service.UserService,
+	subforumService *service.SubforumService,
+	roleService *service.SubforumRoleService) *PostHandler {
+
 	return &PostHandler{
-		PostService:    postService,
-		CommentService: commentService,
-		Endpoint:       endpoint,
+		likeService:         likeService,
+		SubforumRoleService: roleService,
+		SubforumService:     subforumService,
+		PostService:         postService,
+		CommentService:      commentService,
+		UserService:         userService,
+		Endpoint:            endpoint,
 	}
 }
 
@@ -153,26 +166,39 @@ func (ph *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 
 	post, err := ph.PostService.GetPostById(uuid.FromStringOrNil(id))
 	if err != nil {
-		httpErr := err.(*http_errors.HttpError)
-		http.Error(w, httpErr.Error(), httpErr.Code)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	comments, err := ph.CommentService.GetAllCommentsByPostID(uuid.FromStringOrNil(id))
 	if err != nil {
-		httpErr := err.(*http_errors.HttpError)
-		http.Error(w, httpErr.Error(), httpErr.Code)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	subforum, err := ph.SubforumService.GetSubforumById(post.SubforumID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	user, err := ph.UserService.GetUserByID(post.UserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rates, err := ph.likeService.GetLikesByPostID(post.ID)
 
 	postDto := &dto.PostDto{
 		ID:           post.ID,
 		Title:        post.Title,
 		Content:      post.Content,
 		CreationDate: post.CreationDate,
-		SubofrumID:   post.SubforumID,
-		UserID:       post.UserID,
+		Subforum:     subforum,
+		User:         user,
 		Comments:     comments,
+		Likes:        rates,
 	}
 
 	json.NewEncoder(w).Encode(postDto)

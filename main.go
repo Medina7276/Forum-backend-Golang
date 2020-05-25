@@ -34,6 +34,7 @@ func main() {
 	subforumRoleService := service.NewSubforumRoleService(subforumRoleDao, subforumService)
 	subforumService.SubforumRoleService = subforumRoleService
 	likeService := service.NewLikeService(likeDao)
+
 	//HANDLERS
 	userHandler := apihandlers.NewUserHandler("/api/user/", userService)
 	http.Handle("/api/user/", middleware.ContentTypeJson(http.HandlerFunc(userHandler.Route)))
@@ -41,7 +42,7 @@ func main() {
 	subforumHandler := apihandlers.NewSubforumHandler("/api/subforum/", subforumService, postService, subforumRoleService)
 	http.Handle("/api/subforum/", middleware.ContentTypeJson(http.HandlerFunc(subforumHandler.Route)))
 
-	postHandler := apihandlers.NewPostHandler("/api/post/", postService, commentService)
+	postHandler := apihandlers.NewPostHandler("/api/post/", likeService, postService, commentService, userService, subforumService, subforumRoleService)
 	http.Handle("/api/post/", middleware.ContentTypeJson(http.HandlerFunc(postHandler.Route)))
 
 	subforumRoleHandler := apihandlers.NewSubforumRoleHandler("/api/subforumrole", subforumRoleService)
